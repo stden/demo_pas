@@ -1,6 +1,7 @@
-Uses CRT,MCGADemo;
+Uses CRT;
 
-{ $DEFINE MoveFlame}
+{$I MCGA.PAS}
+{$DEFINE MoveFlame}
 
 Const
 {$IFDEF MoveFlame}
@@ -22,72 +23,102 @@ Const
   XText=30;
   YText=100;
   IncStep=20;
-  NumPoints=1000;
+  NumPoints=500;
 
- Type
-   TFlamPoint = Object
-     X,Y:Word;
-     T:Byte;
-     Constructor Init;
-     Procedure Reset;
-     Procedure Draw;
-   End;
-   TFlamTxt2 = Object(TFlame)
-     Points:Array [1..NumPoints] of TFlamPoint;
-     Constructor Init;
-     Procedure Step;
-   End;
+Type
+  TFlamPoint=
+    Object
+      Coord:Word;
+      T:Byte;
+      Constructor Init;
+      Destructor Done;
+      Procedure Reset;
+      Procedure Draw;
+    End;
+  TDemo=
+    Object
+      Points:Array [1..NumPoints] of TFlamPoint;
+      Constructor Init;
+      Destructor Done;
+      Procedure Step;
+    End;
 
- Constructor TFlamPoint.Init;
-   Begin
-     Reset;
-   End;
+Constructor TFlamPoint.Init;
+Begin
+   Reset;
+End;
 
- Procedure TFlamPoint.Draw;
-   Begin
-     If G^[Y,X]<255-T then Inc(G^[Y,X],T) Else G^[Y,X]:=255;
-   End;
+Destructor TFlamPoint.Done;
+Begin
+End;
 
- Procedure TFlamPoint.Reset;
-   Var XC,YC,XS,YS:Byte;
-   Begin
-     Repeat XC:=Random(19)+1; YC:=Random(5)+1; Until Text[YC,XC]<>' ';
-     XS:=Random(PixSize); YS:=Random(PixSize);
-     Y:=YText+YC*PixSize+YS;
-     X:=XText+XC*PixSize+XS;
-     Case Text[YC,XC] of
-       '+':T:=IncStep Shl 1;
-       '-':T:=IncStep Shr 1;
-       '/':T:=1;
-       ' ':T:=0;
+Procedure TFlamPoint.Draw;
+Begin
+   If SB^[Coord]<255-T then
+     Inc(SB^[Coord],T)
+     Else
+     SB^[Coord]:=255;
+End;
+
+Procedure TFlamPoint.Reset;
+  Var
+    XC,YC,XS,YS:Byte;
+Begin
+   Repeat
+     XC:=Random(19)+1;
+     YC:=Random(5)+1;
+   Until Text[YC,XC]<>' ';
+   XS:=Random(PixSize);
+   YS:=Random(PixSize);
+   Coord:=(YText+YC*PixSize+YS)*320+(XText+XC*PixSize+XS);
+   Case Text[YC,XC] of
+     '+':T:=IncStep Shl 1;
+     '-':T:=IncStep Shr 1;
+     '/':T:=1;
+     ' ':T:=0;
      Else
        T:=IncStep;
-     End;
    End;
+End;
 
- Constructor TFlamTxt2.Init;
-   Var I:Word;
-   Begin
-     Inherited Init;
-     For I:=1 to NumPoints do Points[I].Init;
-   End;
-
- Procedure TFlamTxt2.Step;
-   Var I:Word;
-   Begin
-     For I:=1 to NumPoints do Points[I].Draw;
-     For I:=1 to NumPoints Div 100 do Points[Random(NumPoints)+1].Reset;
-    {$IFDEF MoveFlame}
-     FlamePicture2;
-    {$ELSE}
-     SoftPicture;
-    {$ENDIF}
-     Inherited Step;
-   End;
-
-Var Demo:TFlamTxt2;
+Constructor TDemo.Init;
+  Var
+    I:Word;
 Begin
-  Demo.Init;
-  Repeat Demo.Step; Until KeyPressed;
-  Demo.Done;
+   For I:=1 to NumPoints do
+     Points[I].Init;
+End;
+
+Destructor TDemo.Done;
+Begin
+End;
+
+Procedure TDemo.Step;
+  Var
+    I:Word;
+Begin
+   For I:=1 to NumPoints do
+     Points[I].Draw;
+   For I:=1 to NumPoints Div 100 do Points[Random(NumPoints)+1].Reset;
+End;
+
+Var
+  Demo:TDemo;
+
+Begin
+   Init_Demo;
+   Flame_Palette;
+   Demo.Init;
+   Repeat
+     {$IFDEF MoveFlame}
+     Flame_Picture_2;
+     {$ELSE}
+     Soft_Picture;
+     {$ENDIF}
+     Demo.Step;
+     Show;
+   Until KeyPressed;
+   Demo.Done;
+   ReadKey;
+   Close_Demo;
 End.

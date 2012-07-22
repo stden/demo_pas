@@ -1,28 +1,27 @@
-{ * DiabloDemo * }
-Uses CRT,MCGADemo;
+Uses CRT;
 
-Type DiabloDemo = Object(TDemo)
+{$I MCGA.PAS}
+
+Type Demo = Object
        Constructor Init;
-       Procedure Step;
+       Procedure Run;
      End;
 
-  Constructor DiabloDemo.Init;
-    Var I,J:Word;
+  Constructor Demo.Init;
+    Var I:Word;
     Begin
-      Inherited Init;
-      For I:=0 to 199 do
-        For J:=0 to 319 do G^[I,J]:=Random(256);
-      SetColor(0,31,31,31);
-      SetColor(1,0,0,31);
-      SetColor(2,0,0,15);
-      For I:=3 to 255 do SetColor(I,0,15,0);
+      For I:=0 to 63999 do SB^[I]:=Random(256);
+      Set_Color(0,31,31,31);
+      Set_Color(1,0,0,31);
+      Set_Color(2,0,0,15);
+      For I:=3 to 255 do Set_Color(I,0,15,0);
     End;
 
-  Procedure DiabloDemo.Step;
+  Procedure Demo.Run;
     Var D:Byte; I:Word;
     Begin
       Asm
-        LES  DI,G
+        LES  DI,SB
         Mov  CX,63999
        @@L:
         Mov  AL,ES:[DI]
@@ -39,12 +38,15 @@ Type DiabloDemo = Object(TDemo)
         Inc  DI
         Loop @@L
       End;
-      Inherited Step;
+      Show;
     End;
 
-Var Demo:DiabloDemo;
+Var D:Demo;
 Begin
-  Demo.Init;
-  Repeat Demo.Step; Until KeyPressed;
-  Demo.Done;
+  Init_Demo;
+  D.Init;
+  Repeat
+    D.Run;
+  Until KeyPressed;
+  Close_Demo;
 End.

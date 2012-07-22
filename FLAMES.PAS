@@ -1,54 +1,67 @@
-Uses CRT,MCGADemo;
+Uses CRT;
 
- Type
-   FlamesDemo = Object(TFlame)
-     N,T,Border:Byte;
-     Constructor Init;
-     Procedure Step;
-   End;
+{$I MCGA.PAS }
 
- Constructor FlamesDemo.Init;
-   Begin
-     Inherited Init;
-     N:=10;
-     T:=255;
-     Border:=100;
-   End;
+Type Demo = Object
+       NNN,TTT,Border:Byte;
+       Constructor Init;
+       Procedure Step;
+       Destructor Done;
+     End;
 
-  Procedure FlamesDemo.Step;
-    Var D:Byte; I,J:Word;
+  Constructor Demo.Init;
     Begin
-      G^[199,Border-1]:=0;
-      G^[199,320-Border+1]:=0;
-      For I:=1 to ((160-Border)*N) Shr 7 do
-        Begin
-           J:=Border+Random(320-(Border Shl 1));
-           D:= (G^[199,J+1] + G^[199,J] + G^[199,J-1]) Div 3;
-           G^[199,J]:=Ord(D<(T-T Div 5))*T;
-        End;
-      FlamePicture2;
-      Inherited Step;
+      Flame_Palette;
+      FillChar(SB^,64000,0);
+      NNN:=10;
+      TTT:=255;
+      Border:=100;
     End;
 
-Var Demo:FlamesDemo;
+   Procedure Demo.Step;
+     Var D:Byte; I,J:Word;
+         N:Integer;
+   Begin
+      J:=63680+Border-1;
+      SB^[J]:=0;
+      J:=63680+320-Border+1;
+      SB^[J]:=0;
+      For I:=1 to ((160-Border)*NNN) Shr 7 do
+        Begin
+           J:=63680+Border+Random(320-(Border Shl 1));
+           D:=(SB^[J+1]+SB^[J]+SB^[J-1]) Div 3;
+           SB^[J]:=Ord(D<(TTT-TTT Div 5))*TTT;
+        End;
+      Flame_Picture_2;
+    End;
+
+  Destructor Demo.Done;
+    Begin
+      Full_Soft_Picture(50);
+    End;
+
+Var _RECYCLED_:Demo;
 Begin
-  Demo.Init;
+  Init_Demo;
+  _RECYCLED_.Init;
   Repeat
-    Demo.Step;
-    With Demo do
-      If KeyPressed then
-        Case ReadKey of
-          #27:Break;
-          #0:
+    _RECYCLED_.Step;
+    Show;
+    If KeyPressed then
+      Case ReadKey of
+        #27:Break;
+        #0:
+          With _RECYCLED_ do
             Case ReadKey of
-              #80:If T>0 then Dec(T);
-              #72:If T<255 then Inc(T);
+              #80:If TTT>0 then Dec(TTT);
+              #72:If TTT<255 then Inc(TTT);
               #75:If Border>5 then Dec(Border);
               #77:If Border<158 then Inc(Border);
-              #81:If N>0 then Dec(N);
-              #73:If N<255 then Inc(N);
+              #81:If NNN>0 then Dec(NNN);
+              #73:If NNN<255 then Inc(NNN);
             End;
-        End;
+      End;
   Until False;
-  Demo.Done;
+  _RECYCLED_.Done;
+  Close_Demo;
 End.

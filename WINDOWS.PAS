@@ -1,47 +1,33 @@
-Uses CRT,MCGADemo;
+Uses CRT;
 
- Type
-   TWindows = Object(TFlame)
-     Constructor Init;
-     Procedure Step;
-   End;
+{$I MCGA.PAS }
 
- Constructor TWindows.Init;
-   Var X,Y:Word;
-   Begin
-     Inherited Init;
-     For X:=0 to 319 do
-       For Y:=0 to 199 do 
-         G^[Y,X]:=Random(256);
-   End;
-
- Procedure TWindows.Step;
-   Begin
-     Asm
-       LES DI,G
-      @@P:
-       Mov AL,ES:[DI]
-       Cmp AL,0
-       JE  @@L
-       Dec AL
-       Mov ES:[DI+1],AL
-       Mov ES:[DI+320],AL
-       Mov ES:[DI-320],AL
-       Mov ES:[DI],AL
-       Add AL,2
-       Mov ES:[DI-1],AL
-      @@L:
-       Inc DI
-       Cmp DI,64000
-       JNE @@P
-     End;
-     Inherited Step;
-   End;
-
-Var Demo:TWindows;
+Var I:Word;
 Begin
-  Demo.Init;
-  Repeat Demo.Step; Until KeyPressed;
-  Demo.Done;
+  Init_Demo;
+  Red_Palette;
+  For I:=0 to 63999 do SB^[I]:=Random(256);
+  Repeat
+    Asm
+      LES DI,SB
+     @@P:
+      Mov AL,ES:[DI]
+      Cmp AL,0
+      JE  @@L
+      Dec AL
+      Mov ES:[DI+1],AL
+      Mov ES:[DI+320],AL
+      Mov ES:[DI-320],AL
+      Mov ES:[DI],AL
+      Add AL,2
+      Mov ES:[DI-1],AL
+     @@L:
+      Inc DI
+      Cmp DI,64000
+      JNE @@P
+    End;
+    Show;
+  Until KeyPressed;
+  Full_Soft_Picture(50);
+  Close_Demo;
 End.
-

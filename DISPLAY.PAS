@@ -1,28 +1,13 @@
-Uses CRT,Gr_MCGA;
+Uses CRT;
 
-Procedure FillScreen; Assembler;
-  Asm
-    Mov AX,SegA000
-    Mov ES,AX
-    Mov DL,100
-    Xor DI,DI
-  @@RULES:
-    Mov CX,160
-    Mov AX,000Fh
-    Rep Stosw
-    Mov CX,160
-    Mov AX,0F00h
-    Rep Stosw
-    Dec DL
-    JNZ @@RULES;
-  End;
+{$I MCGA.PAS }
 
 Begin
-  InitMCGA;
-  DisableRefrech;
-  FillScreen;
+  Init_MCGA;
+  Disable_Refrech;
+  Fill_Screen;
   ReadKey;
-  EnableRefrech;
+  Enable_Refrech;
   ReadKey;
-  DoneMCGA;
+  Close_MCGA;
 End.
